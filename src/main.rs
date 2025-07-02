@@ -4,7 +4,6 @@ use clap::Parser;
 
 use crate::ai::ai_response;
 
-
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
@@ -18,13 +17,17 @@ struct Args {
     ai: bool,
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let args = Args::parse();
 
     if args.ai {
         println!("{} ", args.ques);
-        let res =  ai_response(&args.ques);
-        println!("{:?}",res);
+        let res = ai_response(&args.ques).await;
+        match res {
+            Ok(text) => println!("✅ Response: {}", text),
+            Err(e) => eprintln!("❌ Error: {}", e),
+        }
     } else {
         println!("AI is disabled");
     }

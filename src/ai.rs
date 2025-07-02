@@ -30,11 +30,10 @@ struct ChatResponse {
     choices: Vec<Choice>,
 }
 
-#[tokio::main]
-pub async fn ai_response(ques: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn ai_response(ques: &str) -> Result<String, Box<dyn std::error::Error>> {
     // ques.parse().unwrap();
     dotenv().ok();
-     let api_key = env::var("GROQ_API_KEY")?;
+    let api_key = env::var("GROQ_API_KEY").expect("Didn't find the groq api key");
 
     let client = reqwest::Client::new();
     let url = "https://api.groq.com/openai/v1/chat/completions";
@@ -43,7 +42,7 @@ pub async fn ai_response(ques: &str) -> Result<(), Box<dyn std::error::Error>> {
         model: "llama3-70b-8192".to_string(), // or "llama3-70b-8192"
         messages: vec![Message {
             role: "user".to_string(),
-            content: ques.parse().unwrap(),
+            content: ques.to_string(),
         }],
     };
 
@@ -53,12 +52,21 @@ pub async fn ai_response(ques: &str) -> Result<(), Box<dyn std::error::Error>> {
         .header(CONTENT_TYPE, "application/json")
         .json(&body)
         .send()
-        .await?;
+        .await
+        .expect("Didn't get response from groq");
 
-    let text = res.text().await?;
+    let text = res
+        .text()
+        .await
+        .expect("Didn't get response from groq text");
     println!("🔍 Raw response: {}", text);
-    let json: ChatResponse = serde_json::from_str(&text)?;
-    println!("🤖 {}", json.choices[0].message.content.trim());
-
-    Ok(())
+    let json: ChatResponse = serde_json::from_str(&text)
+        .expect("Unusual behaviour in converting the response from groq");
+    // println!("🤖 {}", json.choices[0].message.content.trim());
+    if let Some(choice) = json.choices.get(0) {
+        let ans = choice.message.content.trim();
+        Ok(format!("🤖 {}", ans))
+    } else {
+        Err("No choices returned in response".into())
+    }
 }
