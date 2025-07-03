@@ -1,10 +1,13 @@
 mod ai;
 mod sys;
+mod todo;
+
 use clap::Parser;
 
 use crate::ai::ai_response;
-use crate::sys::general_bool;
-use crate::sys::kill_process_pid;
+use crate::sys::{general_bool,kill_process_pid};
+
+use dialoguer::{theme::ColorfulTheme, Select};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -14,18 +17,6 @@ struct Args {
 
     #[arg(short, long, default_value_t = false, action=clap::ArgAction::Set)]
     ai: bool,
-
-    #[arg(short, long, default_value_t = false, action=clap::ArgAction::Set)]
-    mem: bool,
-
-    #[arg(short, long, default_value_t = false, action=clap::ArgAction::Set)]
-    system: bool,
-
-    #[arg(short, long, default_value_t = false, action=clap::ArgAction::Set)]
-    disk: bool,
-
-    #[arg(short, long, default_value_t = false, action=clap::ArgAction::Set)]
-    network: bool,
 
     #[arg(short, long)]
     kill_pid: Option<String>,
@@ -51,23 +42,34 @@ async fn main() {
         println!("AI is disabled");
     }
 
-    if args.mem {
-        general_bool(true, "mem");
-    }
-    if args.system {
-        general_bool(true, "system");
-    }
-    if args.disk {
-        general_bool(true, "disk");
-    }
-    if args.network {
-        general_bool(true, "network");
+    let options = vec![
+        "commands",
+        "Show memory specs",
+        "Show system specs",
+        "Show disk specs",
+        "show network specs",
+    ];
+    let selection = Select::with_theme(&ColorfulTheme::default())
+        .with_prompt("Choose an action")
+        .default(0)
+        .items(&options)
+        .interact()
+        .unwrap();
+
+    match selection {
+        0 => println!("Working on commands"),
+        1 => general_bool(true, "mem"),
+        2 => general_bool(true, "system"),
+        3 => general_bool(true, "disk"),
+        4 => general_bool(true, "network"),
+        _ => println!("Invalid selection"),
     }
 
     match args.kill_pid {
         Some(val) => kill_process_pid(val),
         None => {
-            println!("No PID provided");
+            println!("");
         }
     }
+
 }

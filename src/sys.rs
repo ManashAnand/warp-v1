@@ -18,11 +18,9 @@ pub fn general_bool(status: bool, func_name: &str) {
 fn show_mem() {
     let mut sys = System::new_all();
 
-    // First we update all information of our `System` struct.
     sys.refresh_all();
 
     println!("=> system:");
-    // RAM and swap information:
     println!("total memory: {} bytes", sys.total_memory());
     println!("used memory : {} bytes", sys.used_memory());
     println!("total swap  : {} bytes", sys.total_swap());
