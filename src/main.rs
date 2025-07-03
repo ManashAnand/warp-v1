@@ -4,6 +4,7 @@ use clap::Parser;
 
 use crate::ai::ai_response;
 use crate::sys::general_bool;
+use crate::sys::kill_process_pid;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -25,6 +26,9 @@ struct Args {
 
     #[arg(short, long, default_value_t = false, action=clap::ArgAction::Set)]
     network: bool,
+
+    #[arg(short, long)]
+    kill_pid: Option<String>,
 }
 
 #[tokio::main]
@@ -58,5 +62,12 @@ async fn main() {
     }
     if args.network {
         general_bool(true, "network");
+    }
+
+    match args.kill_pid {
+        Some(val) => kill_process_pid(val),
+        None => {
+            println!("No PID provided");
+        }
     }
 }

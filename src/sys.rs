@@ -1,4 +1,5 @@
-use sysinfo::{Components, Disks, Networks, System};
+use clap::builder::Str;
+use sysinfo::{Components, Disks, Networks, System,Signal};
 
 pub fn general_bool(status: bool, func_name: &str) {
     if status {
@@ -54,6 +55,16 @@ fn show_disk_specs() {
 
     sys.refresh_all();
 
+    // Number of CPUs:
+    println!("NB CPUs: {}", sys.cpus().len());
+
+    println!("");
+    // Display processes ID, name and disk usage:
+    for (pid, process) in sys.processes() {
+        println!("[{pid}] {:?} {:?}", process.name(), process.disk_usage());
+    }
+
+    println!("");
     println!("=> disks:");
     let disks = Disks::new_with_refreshed_list();
     for disk in &disks {
@@ -76,4 +87,23 @@ fn show_network_specs() {
         );
     }
     println!("");
+}
+
+pub fn kill_process_pid(pid: String) {
+    println!("Kill this process {}", pid);
+
+    let mut sys = System::new_all();
+    sys.refresh_all();
+
+    match sys.process(pid.parse().expect("converting string to PID")) {
+        Some(process) => {
+            println!("🔪 Killing process: {:?} [{}]", process.name(), pid);
+            if process.kill_with(Signal::Kill).is_some() {
+                println!("✅ Successfully sent kill signal.");
+            } else {
+                println!("⚠️ Failed to kill the process.");
+            }
+        }
+        None => println!("❌ No process found with PID {}", pid),
+    }
 }
