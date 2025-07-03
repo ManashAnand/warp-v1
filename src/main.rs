@@ -19,6 +19,12 @@ struct Args {
 
     #[arg(short, long, default_value_t = false, action=clap::ArgAction::Set)]
     system: bool,
+
+    #[arg(short, long, default_value_t = false, action=clap::ArgAction::Set)]
+    disk: bool,
+
+    #[arg(short, long, default_value_t = false, action=clap::ArgAction::Set)]
+    network: bool,
 }
 
 #[tokio::main]
@@ -46,5 +52,11 @@ async fn main() {
     }
     if args.system {
         general_bool(true, "system");
+    }
+    if args.disk {
+        general_bool(true, "disk");
+    }
+    if args.network {
+        general_bool(true, "network");
     }
 }
