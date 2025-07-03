@@ -1,5 +1,4 @@
-use clap::builder::Str;
-use sysinfo::{Components, Disks, Networks, System,Signal};
+use sysinfo::{ Disks, Networks, System,Signal};
 
 pub fn general_bool(status: bool, func_name: &str) {
     if status {
